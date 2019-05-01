@@ -113,7 +113,7 @@ public class HKProgressHUD: UIView {
         }
         didSet {
             if oldValue !== progressObjectDisplayLink {
-                progressObjectDisplayLink?.add(to: RunLoop.main, forMode: .defaultRunLoopMode)
+                progressObjectDisplayLink?.add(to: RunLoop.main, forMode: .default)
             }
         }
     }
@@ -188,7 +188,7 @@ public class HKProgressHUD: UIView {
         // If the grace time is set, postpone the HUD display
         if ( graceTime > 0.0) {
             let timer = Timer(timeInterval: graceTime, target: self, selector: #selector(handleGraceTimer(_:)), userInfo: nil, repeats: false)
-            RunLoop.current.add(timer, forMode: .commonModes)
+            RunLoop.current.add(timer, forMode: .common)
             graceTimer = timer
         } else {
             showUsingAnimation(animated)
@@ -206,7 +206,7 @@ public class HKProgressHUD: UIView {
             let interval = Date().timeIntervalSince(showStarted!)
             if(interval < minShowTime) {
                 let timer = Timer(timeInterval: (minShowTime - interval), target: self, selector: #selector(handleMinShowTimer(_:)), userInfo: nil, repeats: false)
-                RunLoop.current.add(timer, forMode: .commonModes)
+                RunLoop.current.add(timer, forMode: .common)
                 minShowTimer = timer
             }
         } else {
@@ -217,23 +217,23 @@ public class HKProgressHUD: UIView {
     
     func hide(animated: Bool, afterDelay delay: TimeInterval) {
         let timer = Timer(timeInterval: delay, target: self, selector: #selector(handleHideTimer(_:)), userInfo: animated, repeats: false)
-        RunLoop.current.add(timer, forMode: .commonModes)
+        RunLoop.current.add(timer, forMode: .common)
         hideDelayTimer = timer
     }
     
     // MARK: Timer callbacks
-    func handleGraceTimer(_ timer: Timer) {
+    @objc func handleGraceTimer(_ timer: Timer) {
         // Show the HUD only if the task is still running
         if(!isFinished) {
             showUsingAnimation(isUseAnimation!)
         }
     }
     
-    func handleMinShowTimer(_ timer: Timer) {
+    @objc func handleMinShowTimer(_ timer: Timer) {
         hideUsingAnimation(isUseAnimation!)
     }
     
-    func handleHideTimer(_ timer: Timer) {
+    @objc func handleHideTimer(_ timer: Timer) {
         hide(animated: timer.userInfo as! Bool)
     }
     
@@ -370,8 +370,8 @@ public class HKProgressHUD: UIView {
         
         for view: UIView in [label!, detailsLabel!, button!] {
             view.translatesAutoresizingMaskIntoConstraints = false
-            view.setContentCompressionResistancePriority(998.0, for: .horizontal)
-            view.setContentCompressionResistancePriority(998.0, for: .vertical)
+            view.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: .horizontal)
+            view.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: .vertical)
             bezelView?.addSubview(view)
         }
         
@@ -392,7 +392,7 @@ public class HKProgressHUD: UIView {
             if indicator as? UIActivityIndicatorView == nil {
                 // Update to indeterminate mode
                 indicator?.removeFromSuperview()
-                let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+                let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
                 activityIndicator.startAnimating()
                 indicator = activityIndicator
                 bezelView?.addSubview(activityIndicator)
@@ -432,8 +432,8 @@ public class HKProgressHUD: UIView {
             progressView.setValue(progress, forKey: "progress")
         }
         
-        indicator?.setContentCompressionResistancePriority(998, for: .horizontal)
-        indicator?.setContentCompressionResistancePriority(998, for: .vertical)
+        indicator?.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998), for: .horizontal)
+        indicator?.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998), for: .vertical)
         
         updateViews(forColor: contentColor)
         setNeedsUpdateConstraints()
@@ -504,14 +504,14 @@ public class HKProgressHUD: UIView {
         var centeringConstraints = [NSLayoutConstraint]()
         centeringConstraints.append(NSLayoutConstraint(item: bezelView!, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1, constant: offset.x))
         centeringConstraints.append(NSLayoutConstraint(item: bezelView!, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: offset.y))
-        apply(priority: 998, toConstraints: centeringConstraints)
+        apply(priority: UILayoutPriority(rawValue: 998), toConstraints: centeringConstraints)
         addConstraints(centeringConstraints)
         
         // Ensure minimum side margin is kept
         var sideConstraints = [NSLayoutConstraint]()
         sideConstraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[bezel]-(>=margin)-|", options: .alignAllTop, metrics: metrics, views: ["bezel": bezelView!]))
         sideConstraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-(>=margin)-[bezel]-(>=margin)-|", options: .alignAllTop, metrics: metrics, views: ["bezel": bezelView!]))
-        self.apply(priority: 999, toConstraints: sideConstraints)
+        self.apply(priority: UILayoutPriority(rawValue: 999), toConstraints: sideConstraints)
         self.addConstraints(sideConstraints)
         
         // Minimum bezel size, if set
@@ -520,14 +520,14 @@ public class HKProgressHUD: UIView {
             var miniSizeConstraints = [NSLayoutConstraint]()
             miniSizeConstraints.append(NSLayoutConstraint(item: bezelView!, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: minimumSize.width))
             miniSizeConstraints.append(NSLayoutConstraint(item: bezelView!, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: minimumSize.height))
-            self.apply(priority: 997, toConstraints: miniSizeConstraints)
+            self.apply(priority: UILayoutPriority(rawValue: 997), toConstraints: miniSizeConstraints)
             bezelConstraints?.append(contentsOf: miniSizeConstraints)
         }
         
         // Square aspect ratio, if set
         if(isSquare) {
             let square = NSLayoutConstraint(item: bezelView!, attribute: .height, relatedBy: .equal, toItem: bezelView!, attribute: .width, multiplier: 1, constant: 0)
-            square.priority = 997
+            square.priority = UILayoutPriority(rawValue: 997)
             bezelConstraints?.append(square)
         }
         
@@ -609,7 +609,7 @@ public class HKProgressHUD: UIView {
         }
     }
     
-    func updateProgressFromProgressObject() {
+    @objc func updateProgressFromProgressObject() {
         progress = Float((progressObject?.fractionCompleted)!)
     }
     
@@ -617,19 +617,19 @@ public class HKProgressHUD: UIView {
     func registerForNotifications() {
         #if !os(tvOS)
             let nc = NotificationCenter.default
-            nc.addObserver(self, selector: #selector(statusBarOrientationDidChange(_:)), name: .UIApplicationDidChangeStatusBarOrientation, object: nil)
+        nc.addObserver(self, selector: #selector(statusBarOrientationDidChange(_:)), name: UIApplication.didChangeStatusBarOrientationNotification, object: nil)
         #endif
     }
     
     func unregisterFormNotifications() {
         #if !os(tvOS)
             let nc = NotificationCenter.default
-            nc.removeObserver(self, name: .UIApplicationDidChangeStatusBarOrientation, object: nil)
+        nc.removeObserver(self, name: UIApplication.didChangeStatusBarOrientationNotification, object: nil)
         #endif
     }
     
 #if !os(tvOS)
-    func statusBarOrientationDidChange(_ notification: NSNotification) {
+    @objc func statusBarOrientationDidChange(_ notification: NSNotification) {
         if (superview != nil) {
             updateForCurrentOrientation(animated: true)
         }
@@ -724,11 +724,11 @@ class ProgressHUDRoundedButton: UIButton {
         super.layoutSubviews()
         // Rounded corners
         let height = self.bounds.height
-        self.layer.cornerRadius = height.divided(by: 2.0)
+        self.layer.cornerRadius = height > 0.0 ? height / 2.0 : 0.0
     }
     
     override var intrinsicContentSize: CGSize {
-        if(self.allControlEvents == UIControlEvents(rawValue: 0)) {
+        if(self.allControlEvents == UIControl.Event(rawValue: 0)) {
             return CGSize.zero
         }
         var size = super.intrinsicContentSize
@@ -737,7 +737,7 @@ class ProgressHUDRoundedButton: UIButton {
     }
     
     // MARK: Color
-    override func setTitleColor(_ color: UIColor?, for state: UIControlState) {
+    override func setTitleColor(_ color: UIColor?, for state: UIControl.State) {
         super.setTitleColor(color, for: state)
         // Update related colors
         let highlighted = isHighlighted
