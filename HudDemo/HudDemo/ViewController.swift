@@ -311,12 +311,11 @@ class ViewController: UITableViewController, URLSessionDownloadDelegate {
     }
     
     func doSomeWorkWithMixedProgress() {
-        let hud = HKProgressHUD.hudForView((self.navigationController?.view)!)
-        
         // Indetermimate mode
         sleep(2)
         // Switch to deteminate mode
         DispatchQueue.main.async {
+            let hud = HKProgressHUD.hudForView((self.navigationController?.view)!)
             hud?.mode = .determinate
             hud?.label?.text = NSLocalizedString("Loading", comment: "hud loading title")
         }
@@ -324,11 +323,13 @@ class ViewController: UITableViewController, URLSessionDownloadDelegate {
         
         // Back to indeter mode
         DispatchQueue.main.async {
+            let hud = HKProgressHUD.hudForView((self.navigationController?.view)!)
             hud?.mode = .indeterminate
             hud?.label?.text = NSLocalizedString("Cleaning up...", comment: "hud cleaning up title")
         }
         sleep(2)
         DispatchQueue.main.sync {
+            let hud = HKProgressHUD.hudForView((self.navigationController?.view)!)
             let image = #imageLiteral(resourceName: "Checkmark").withRenderingMode(.alwaysTemplate)
             let imageView = UIImageView(image: image)
             hud?.customView = imageView
